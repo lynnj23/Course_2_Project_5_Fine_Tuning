@@ -94,7 +94,7 @@ print("Test#7 Tokenized 'text' field for the first few examples:")
 for entry in tokenized_dataset.select(range(1)):
     print(entry["input_ids"])
 
-# Load the PEFT Model and run through steps to train chosen model
+# Load the base transformer model before moving to wrap a classifier
 my_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
                                                            num_labels=7, id2label={0: "NEUTRAL",
                                                                                    1: "SURPRISE",
