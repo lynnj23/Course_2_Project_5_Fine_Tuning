@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac80808d-863d-405e-97ed-efc4526b2e5d" name="Changes" comment="This is the first version of my Project 5.0 Assessment">
+    <list default="true" id="ac80808d-863d-405e-97ed-efc4526b2e5d" name="Changes" comment="Updated the project, formated dataset inputs and tokenised the test data">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -100,11 +100,20 @@
       <option name="project" value="LOCAL" />
       <updated>1742033535394</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Updated the project, formated dataset inputs and tokenised the test data">
+      <option name="closed" value="true" />
+      <created>1742222046319</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1742222046319</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="This is the first version of my Project 5.0 Assessment" />
-    <option name="LAST_COMMIT_MESSAGE" value="This is the first version of my Project 5.0 Assessment" />
+    <MESSAGE value="Updated the project, formated dataset inputs and tokenised the test data" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated the project, formated dataset inputs and tokenised the test data" />
   </component>
 </project>
