@@ -2,7 +2,6 @@
 The aim is to take an LLM, attach a classification head, train the LLM to requirements\
 then output a table of learned results."""
 
-
 # Importing areas
 from datasets import load_dataset, concatenate_datasets
 from transformers import AutoModelForSequenceClassification, AutoTokenizer as att, DataCollatorWithPadding, Trainer, \
@@ -10,10 +9,9 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer as at
 import pandas as pd
 import numpy as np
 
-
 # Constants
-SPLIT_TRAINING = "1%"
-SPLIT_EVAL = "1%"
+SPLIT_TRAINING = "2%"
+SPLIT_EVAL = "2%"
 LEARN_RATE = 2e-3
 TRAIN_BATCH_SIZE = 4
 EVAL_BATCH_SIZE = 4
@@ -40,7 +38,6 @@ print(f"Test#2 This is eval_dataset: {type(eval_dataset)}; content: {eval_datase
 train_dataset = train_dataset.add_column("split", ["train"] * len(train_dataset))
 eval_dataset = eval_dataset.add_column("split", ["eval"] * len(eval_dataset))
 
-
 # concatenate the datafiles together into a
 combined_dataset = concatenate_datasets([train_dataset, eval_dataset])
 df = combined_dataset.to_pandas()
@@ -63,7 +60,6 @@ def preprocess_function(examples):
 
 tokenized_dataset = combined_dataset.map(preprocess_function, batched=True)
 
-
 # Load the base transformer model before moving to wrap a classifier
 my_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
                                                               num_labels=7, id2label={0: "NEUTRAL",
@@ -83,15 +79,15 @@ my_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-u
                                                                                                    })
 
 # Freeze all the parameters of the base model
+# When we fine tune the param will be unfrozen
 for param in my_model.base_model.parameters():
     param.requires_grad = False
 
 var = my_model.classifier
 print(f"Test#8 My model output: {my_model}")
 
-
 # Time to train my_model and initial evaluation
-cycle = 0
+
 def compute_metrics(eval_pred):
     model_predictions, true_labels = eval_pred
 
@@ -123,7 +119,7 @@ my_trainer = Trainer(
         per_device_eval_batch_size=EVAL_BATCH_SIZE,
         num_train_epochs=TRAIN_EPOCHS,
         weight_decay=WGT_DECAY,
-        eval_strategy="epoch",
+        evaluation_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=BEST_MODEL,
     ),
@@ -138,4 +134,19 @@ my_trainer = Trainer(
 
 my_trainer.train()
 # now evaluate the model
-my_trainer.evaluate()
+eval_results = my_trainer.evaluate()
+
+# ------------------ Tabularisation of Results ------------------
+# Create a table to display evaluation metrics in a user-friendly format.
+df_eval = pd.DataFrame([{
+    "Eval Loss": eval_results.get("eval_loss"),
+    "Eval Accuracy": eval_results.get("eval_accuracy"),
+    "Eval Runtime (s)": eval_results.get("eval_runtime"),
+    "Eval Samples/sec": eval_results.get("eval_samples_per_second"),
+    "Eval Steps/sec": eval_results.get("eval_steps_per_second"),
+    "Epoch": eval_results.get("epoch")
+}])
+
+print("\nTabular Evaluation Metrics:")
+print(df_eval.to_string(index=False))
+# ---------------------------------------------------------------
