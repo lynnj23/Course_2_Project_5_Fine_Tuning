@@ -6,8 +6,13 @@ then output a table of learned results."""
 from datasets import load_dataset, concatenate_datasets
 from transformers import AutoModelForSequenceClassification, AutoTokenizer as att, DataCollatorWithPadding, Trainer, \
     TrainingArguments
+from peft import LoftQConfig, LoraConfig, get_peft_model, TaskType
 import pandas as pd
 import numpy as np
+
+# +++++++++++++++++PEFT CONFIG++++++++++++++++
+config = LoraConfig()
+# +++++++++++++++++++++++++++++++++++++++++++
 
 # Constants
 SPLIT_TRAINING = "2%"
@@ -61,47 +66,63 @@ def preprocess_function(examples):
 tokenized_dataset = combined_dataset.map(preprocess_function, batched=True)
 
 # Load the base transformer model before moving to wrap a classifier
-my_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
-                                                              num_labels=7, id2label={0: "NEUTRAL",
-                                                                                      1: "SURPRISE",
-                                                                                      2: "FEAR",
-                                                                                      3: "SADNESS",
-                                                                                      4: "JOY",
-                                                                                      5: "ANGER",
-                                                                                      6: "LOVE"
-                                                                                      }, label2id={"NEUTRAL": 0,
-                                                                                                   "SURPRISE": 1,
-                                                                                                   "FEAR": 2,
-                                                                                                   "SADNESS": 3,
-                                                                                                   "JOY": 4,
-                                                                                                   "ANGER": 5,
-                                                                                                   "LOVE": 6
-                                                                                                   })
+base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
+                                                                num_labels=7, id2label={0: "NEUTRAL",
+                                                                                        1: "SURPRISE",
+                                                                                        2: "FEAR",
+                                                                                        3: "SADNESS",
+                                                                                        4: "JOY",
+                                                                                        5: "ANGER",
+                                                                                        6: "LOVE"
+                                                                                        }, label2id={"NEUTRAL": 0,
+                                                                                                     "SURPRISE": 1,
+                                                                                                     "FEAR": 2,
+                                                                                                     "SADNESS": 3,
+                                                                                                     "JOY": 4,
+                                                                                                     "ANGER": 5,
+                                                                                                     "LOVE": 6
+                                                                                                     })
+# **************************************
+#for name, _ in base_model.named_modules(): print(name)
+#***********************************
+
+loftq_config = LoftQConfig(loftq_bits=4)
+
+peft_config = LoraConfig(
+    task_type=TaskType.SEQ_CLS,
+    r=8,
+    lora_alpha=32,
+    lora_dropout=0.1,
+    bias="none",
+    init_lora_weights="loftq",
+    loftq_config=loftq_config,
+    target_modules=["q_lin", "k_lin", "v_lin", "out_lin"] # Added after research to solve a compatibility error
+)
+
+my_model = get_peft_model(base_model, peft_config)
 
 # Freeze all the parameters of the base model
-# When we fine tune the param will be unfrozen
-for param in my_model.base_model.parameters():
-    param.requires_grad = False
+# When we fine-tune the param will be unfrozen
+# Update - frozen params caused an issue for PEFT. Removed it to free up model
+# for param in my_model.base_model.parameters():
+#     param.requires_grad = False
 
-var = my_model.classifier
+my_model.print_trainable_parameters()
+print(f"Test# 7.5 Loaded PEFT-wrapped model:\n{my_model}")
+var = base_model.classifier
 print(f"Test#8 My model output: {my_model}")
+
 
 # Time to train base_model and initial evaluation
 
 def compute_metrics(eval_pred):
     model_predictions, true_labels = eval_pred
-
     # converting model_prediction logits into class indices
     predicted_labels = np.argmax(model_predictions, axis=1)
-
     print(f"Test#9 These are predicted labels {predicted_labels}")
-
     model_accuracy: object = (predicted_labels == true_labels).mean()
-
     print(f"Test#10 This model accuracy {model_accuracy}")
-
     #return the model accuracy
-
     return {"accuracy": model_accuracy}
 
 
@@ -114,7 +135,6 @@ my_trainer = Trainer(
     args=TrainingArguments(
         output_dir="./data/sentiment_analysis",
         learning_rate=LEARN_RATE,
-        # Reduce the batch size if you don't have enough memory
         per_device_train_batch_size=TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=EVAL_BATCH_SIZE,
         num_train_epochs=TRAIN_EPOCHS,
@@ -122,6 +142,7 @@ my_trainer = Trainer(
         evaluation_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=BEST_MODEL,
+        label_names=["labels"],
     ),
     # ****************dataset amendment***********************
     train_dataset=train_tokenized_dataset,
@@ -132,9 +153,12 @@ my_trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 
+# ********************Train and Eval****************************
 my_trainer.train()
 # now evaluate the model
 eval_results = my_trainer.evaluate()
+
+# ***********************************************************
 
 # ------------------ Tabularisation of Results ------------------
 # Create a table to display evaluation metrics in a user-friendly format.

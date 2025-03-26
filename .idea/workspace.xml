@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ac80808d-863d-405e-97ed-efc4526b2e5d" name="Changes" comment="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process">
+    <list default="true" id="ac80808d-863d-405e-97ed-efc4526b2e5d" name="Changes" comment="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process&#10;&#10;Completed the fine tune model. Now going to add a PEFT model to the mix">
+      <change afterPath="$PROJECT_DIR$/PEFT.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -49,6 +50,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.PEFT.executor": "Run",
     "Python.__init__.executor": "Debug",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -73,7 +75,7 @@
       <ReportDescription localRun="true" path="C:\Users\rljam\AppData\Local\Temp\qodana_output\qodana.sarif.json" reportGuid="637b6f47-8303-4f52-989f-92280dd528e5" reportId="Gen_AI_Cr2_Proj_5.0/qodana/2025-03-21" />
     </option>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager">
     <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Gen_AI_Cr2_Proj_5.0" />
       <option name="ENV_FILES" value="" />
@@ -172,7 +174,15 @@
       <option name="project" value="LOCAL" />
       <updated>1742832679839</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process&#10;&#10;Completed the fine tune model. Now going to add a PEFT model to the mix">
+      <option name="closed" value="true" />
+      <created>1742914233398</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1742914233398</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -191,6 +201,7 @@
     <MESSAGE value="Updated the project, formated dataset inputs and tokenised the test data" />
     <MESSAGE value="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained" />
     <MESSAGE value="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process" />
+    <MESSAGE value="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process&#10;&#10;Completed the fine tune model. Now going to add a PEFT model to the mix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated the project, formated dataset inputs and tokenised the test data&#10;&#10;Added in LoRa model from transformers and set it up. yet to be trained&#10;&#10;This an updated and working version of the classification process&#10;&#10;Completed the fine tune model. Now going to add a PEFT model to the mix" />
   </component>
 </project>
