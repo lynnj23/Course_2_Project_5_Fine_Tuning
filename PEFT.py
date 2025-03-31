@@ -2,11 +2,13 @@
 The aim is to take an LLM, attach a classification head, train the LLM to requirements\
 then output a table of learned results."""
 
+
+
 # Importing areas
 from datasets import load_dataset, concatenate_datasets
 from transformers import AutoModelForSequenceClassification, AutoTokenizer as att, DataCollatorWithPadding, Trainer, \
     TrainingArguments
-from peft import LoftQConfig, LoraConfig, get_peft_model, TaskType
+from peft import LoftQConfig, LoraConfig, get_peft_model, TaskType,PeftModel, AutoPeftModelForCausalLM
 import pandas as pd
 import numpy as np
 
@@ -26,6 +28,7 @@ MY_EVAL_STRAT = "epoch"
 S_STRAT = "epoch"
 BEST_MODEL = True
 
+# %% load the data and tokenise
 # Import the chosen model; in this instance I have taken the recommendation to stick with LoRa
 
 
@@ -36,12 +39,19 @@ train_dataset = load_dataset("cirimus/super-emotion",
 # Stream or slice later dependent on the accuracy of the training.
 eval_dataset = load_dataset("cirimus/super-emotion", split=f"test[:{SPLIT_EVAL}]")  # this loads the eval dataset
 
+# *********************************************************************
+# load my verification set in here and run through the same processes as before
+
+# **********************************************************************
+
+
 print(f"Test#1 This is train_dataset: {type(train_dataset)}; content: {train_dataset}")
 print(f"Test#2 This is eval_dataset: {type(eval_dataset)}; content: {eval_dataset}")
 
 # Add a column to differentiate between the two datasets train and eval
 train_dataset = train_dataset.add_column("split", ["train"] * len(train_dataset))
 eval_dataset = eval_dataset.add_column("split", ["eval"] * len(eval_dataset))
+
 
 # concatenate the datafiles together into a
 combined_dataset = concatenate_datasets([train_dataset, eval_dataset])
@@ -64,6 +74,8 @@ def preprocess_function(examples):
 
 
 tokenized_dataset = combined_dataset.map(preprocess_function, batched=True)
+# ************Jump from here with verification set to run the inference only step****************
+
 
 # Load the base transformer model before moving to wrap a classifier
 base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
@@ -103,7 +115,8 @@ my_model = get_peft_model(base_model, peft_config)
 
 # Freeze all the parameters of the base model
 # When we fine-tune the param will be unfrozen
-# Update - frozen params caused an issue for PEFT. Removed it to free up model
+# Update - frozen params caused an issue for PEFT.
+# Removed it to free up the model
 # for param in my_model.base_model.parameters():
 #     param.requires_grad = False
 
@@ -174,3 +187,8 @@ df_eval = pd.DataFrame([{
 print("\nTabular Evaluation Metrics:")
 print(df_eval.to_string(index=False))
 # ---------------------------------------------------------------
+
+base_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
+my_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
+
+
