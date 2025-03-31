@@ -1,5 +1,6 @@
 # Course_2_Project_5_Fine_Tuning
-Project Brief!
+Project Brief/
+
 Project 5.0 Apply a Lightweight Fine-tuning model to a Foundation Model
 Project Introduction
 Lightweight fine-tuning is one of the most important techniques for adapting foundation models, because it allows you to modify foundation models for your needs without needing substantial computational resources.
