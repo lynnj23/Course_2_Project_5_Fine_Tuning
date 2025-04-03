@@ -76,6 +76,8 @@ def preprocess_function(examples):
 tokenized_dataset = combined_dataset.map(preprocess_function, batched=True)
 # ************Jump from here with verification set to run the inference only step****************
 
+if "label" in tokenized_dataset.column_names:
+    tokenized_dataset = tokenized_dataset.rename_column("label", "labels")
 
 # Load the base transformer model before moving to wrap a classifier
 base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",
@@ -188,7 +190,16 @@ print("\nTabular Evaluation Metrics:")
 print(df_eval.to_string(index=False))
 # ---------------------------------------------------------------
 
-base_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
-my_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
+# base_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
+# my_model.save_pretrained("/tmp/rljames4_5_0_PEFT_Fine_tuning")
 
+# This alternative was added to help with run time issue with regard adapter location storage and retrival
+# This was taken from GPT to resolve an issue with regard location of the adapter files for inference in the next step.
+from pathlib import Path
 
+# Define the save directory relative to the current working directory.
+model_save_dir = Path("models") / "rlj_peft_finetuned_model"
+model_save_dir.mkdir(parents=True, exist_ok=True)  # Create the directory if it doesn't exist.
+
+# Save the model using the constructed path.
+my_model.save_pretrained(str(model_save_dir))

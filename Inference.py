@@ -2,11 +2,17 @@
 
 # *******************Imports*************************
 from datasets import load_dataset
-from transformers import AutoModelForSequenceClassification, AutoTokenizer as att, Trainer, TrainingArguments, DataCollatorWithPadding
-from peft import AutoPeftModelForCausalLM, PeftModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer as att, Trainer, TrainingArguments, \
+    DataCollatorWithPadding
+from peft import PeftModelForSequenceClassification
 import numpy as np
-import pandas as pd
-from openpyxl.workbook import Workbook
+
+#import pandas as pd
+#from openpyxl.workbook import Workbook
+from PEFT import model_save_dir
+
+'PEFT.model_save_dir'
+
 # ******************Constants************************
 
 INFER_VERIFICATION = "1%"
@@ -32,31 +38,32 @@ print(tokenized_verification_dataset[:1])
 
 # *************Load trained Model and run inference******************
 
-base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased",num_labels = 7,id2label={0: "NEUTRAL",
-                                                                                      1: "SURPRISE",
-                                                                                      2: "FEAR",
-                                                                                      3: "SADNESS",
-                                                                                      4: "JOY",
-                                                                                      5: "ANGER",
-                                                                                      6: "LOVE"
-                                                                                      }, label2id={"NEUTRAL": 0,
-                                                                                                   "SURPRISE": 1,
-                                                                                                   "FEAR": 2,
-                                                                                                   "SADNESS": 3,
-                                                                                                   "JOY": 4,
-                                                                                                   "ANGER": 5,
-                                                                                                   "LOVE": 6
-                                                                                                   })
+base_model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased", num_labels=7,
+                                                                id2label={0: "NEUTRAL",
+                                                                          1: "SURPRISE",
+                                                                          2: "FEAR",
+                                                                          3: "SADNESS",
+                                                                          4: "JOY",
+                                                                          5: "ANGER",
+                                                                          6: "LOVE"
+                                                                          }, label2id={"NEUTRAL": 0,
+                                                                                       "SURPRISE": 1,
+                                                                                       "FEAR": 2,
+                                                                                       "SADNESS": 3,
+                                                                                       "JOY": 4,
+                                                                                       "ANGER": 5,
+                                                                                       "LOVE": 6
+                                                                                       })
 
-loaded_model = PeftModelForSequenceClassification.from_pretrained(base_model, r"C:\tmp\rljames4_5_0_PEFT_Fine_tuning")
+loaded_model = PeftModelForSequenceClassification.from_pretrained(base_model, str(model_save_dir))
 tokenizer_loaded = att.from_pretrained("distilbert-base-uncased")
 data_collator = DataCollatorWithPadding(tokenizer)
 
 my_trainer = Trainer(
     model=loaded_model,
     args=TrainingArguments(output_dir="./inference_output",
-        per_device_eval_batch_size=VERI_BATCH_SIZE,  # Adjust the batch size as required.
-    ),
+                           per_device_eval_batch_size=VERI_BATCH_SIZE,  # Adjust the batch size as required.
+                           ),
     eval_dataset=tokenized_verification_dataset,
     tokenizer=tokenizer,
     data_collator=data_collator,
@@ -65,40 +72,5 @@ my_trainer = Trainer(
 # Apply the inference across a sample of the verification dataset
 
 predictions_output = my_trainer.predict(tokenized_verification_dataset)
-predicted_labels = np.argmax(predictions_output.predictions, axis=1)
+predicted_labels: object = np.argmax(predictions_output.predictions, axis=1)
 print("Predicted Labels:", predicted_labels)
-
-# ******data output*********
-import pandas as pd
-
-# Map numeric predictions to their corresponding label names.
-id2label = {
-    0: "NEUTRAL",
-    1: "SURPRISE",
-    2: "FEAR",
-    3: "SADNESS",
-    4: "JOY",
-    5: "ANGER",
-    6: "LOVE"
-}
-
-# Convert the predicted numeric labels to their string representations.
-predicted_labels_str = [id2label[label] for label in predicted_labels]
-
-# Extract the original texts.
-texts = verification_dataset["text"]
-
-# Extract the actual labels from the dataset and convert them to their string representations.
-actual_labels = verification_dataset["label"]
-actual_labels_str = [id2label[label] for label in actual_labels]
-
-# Create a DataFrame to display the results, including both actual and predicted labels.
-results_df = pd.DataFrame({"Text": texts,"Actual Label": actual_labels_str,"Predicted Label": predicted_labels_str})
-
-# Display the DataFrame in a clear, tabular format.
-print("\nInference Results:\n")
-print(results_df.to_string(index=False))
-
-results_df.to_excel("inference_results.xlsx", index=False)
-
-
